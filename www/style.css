@@ -1,0 +1,121 @@
+body {
+    padding: 0;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+}
+
+/* Top Navbar */
+.top-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #222222;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+.top-left, .top-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Hamburger Button */
+.hamburger-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 24px;
+    height: 18px;
+    padding: 0;
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: white;
+    border-radius: 2px;
+    transition: 0.3s;
+}
+
+/* User Icon */
+.user-icon {
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.user-icon:hover, .logo:hover {
+    opacity: 0.8;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    position: fixed;
+    top: 60px;
+    left: -250px;
+    width: 250px;
+    height: calc(100vh - 60px);
+    background-color: #333333;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: left 0.3s ease;
+    z-index: 999;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+.sidebar-menu {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-menu li a, .sidebar-bottom a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: white;
+    padding: 15px 20px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.sidebar-menu li a:hover, .sidebar-bottom a:hover {
+    background-color: #111111;
+}
+
+.sidebar-bottom {
+    border-top: 1px solid #444;
+}
+
+/* Main Content */
+.main-content {
+    margin-top: 80px;
+    padding: 20px;
+    margin-left: 20px;
+}
