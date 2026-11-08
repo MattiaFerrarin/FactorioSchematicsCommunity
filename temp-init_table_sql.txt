@@ -11,11 +11,11 @@ CREATE TABLE Users (
 
 -- Posts
 CREATE TABLE Posts (
-  post_id VARCHAR(255) NOT NULL AUTO_INCREMENT,
-  creation_timestamp DATETIME NOT NULL,
+  post_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  creation_timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   title VARCHAR(255) NOT NULL,
   body MEDIUMTEXT NOT NULL,
-  Users_username INT NOT NULL, -- here
+  Users_username VARCHAR(255) NOT NULL -- here
   PRIMARY KEY (post_id),
   FOREIGN KEY (Users_username) REFERENCES Users (username)
 )
