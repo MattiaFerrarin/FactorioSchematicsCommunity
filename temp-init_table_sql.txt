@@ -1,76 +1,50 @@
+CREATE DATABASE IF NOT EXISTS `factoriocommunity`;
+USE `factoriocommunity`;
+
+DROP TABLE IF EXISTS `Files`;
+DROP TABLE IF EXISTS `Comments`;
+DROP TABLE IF EXISTS `Posts`;
+DROP TABLE IF EXISTS `Users`;
+
 -- Users
 CREATE TABLE Users (
   username VARCHAR(63) NOT NULL,
-  password VARCHAR(63) NOT NULL,
+  password VARCHAR(255) NOT NULL,
   name VARCHAR(63) NOT NULL,
   creation_date DATETIME NOT NULL,
-  profile_description MEDIUMTEXT NOT NULL,
-  profile_picture VARCHAR(255) NOT NULL,
+  profile_description MEDIUMTEXT,
+  profile_picture VARCHAR(255),
   PRIMARY KEY (username)
-)
+);
 
 -- Posts
 CREATE TABLE Posts (
-  post_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  creation_timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  post_id INT NOT NULL AUTO_INCREMENT,
+  creation_timestamp DATETIME NOT NULL,
   title VARCHAR(255) NOT NULL,
   body MEDIUMTEXT NOT NULL,
-  Users_username VARCHAR(255) NOT NULL -- here
+  Users_username VARCHAR(63) NOT NULL,
   PRIMARY KEY (post_id),
   FOREIGN KEY (Users_username) REFERENCES Users (username)
-)
+);
 
 -- Comments
 CREATE TABLE Comments (
-  comment_id VARCHAR(255) NOT NULL,
-  body VARCHAR(255) NOT NULL,
-  timestamp VARCHAR(255) NOT NULL,
+  comment_id INT NOT NULL AUTO_INCREMENT,
+  body VARCHAR(4095) NOT NULL,
+  creation_timestamp DATETIME NOT NULL,
   Posts_post_id INT NOT NULL,
-  Users_username INT NOT NULL,
+  Users_username VARCHAR(63) NOT NULL,
   PRIMARY KEY (comment_id),
   FOREIGN KEY (Posts_post_id) REFERENCES Posts (post_id),
   FOREIGN KEY (Users_username) REFERENCES Users (username)
-)
+);
 
--- Users
-CREATE TABLE Users (
-  username VARCHAR(255) NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  creation_date VARCHAR(255) NOT NULL,
-  profile_description VARCHAR(255) NOT NULL,
-  profile_picture VARCHAR(255) NOT NULL,
-  PRIMARY KEY (username)
-)
-
--- Posts
-CREATE TABLE Posts (
-  post_id VARCHAR(255) NOT NULL,
-  creation_timestamp VARCHAR(255) NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  body VARCHAR(255) NOT NULL,
-  Users_username INT NOT NULL,
-  PRIMARY KEY (post_id),
-  FOREIGN KEY (Users_username) REFERENCES Users (username)
-)
-
--- Comments
-CREATE TABLE Comments (
-  comment_id VARCHAR(255) NOT NULL,
-  body VARCHAR(255) NOT NULL,
-  timestamp VARCHAR(255) NOT NULL,
-  Posts_post_id INT NOT NULL,
-  Users_username INT NOT NULL,
-  PRIMARY KEY (comment_id),
-  FOREIGN KEY (Posts_post_id) REFERENCES Posts (post_id),
-  FOREIGN KEY (Users_username) REFERENCES Users (username)
-)
-
--- files
-CREATE TABLE files (
-  valore VARCHAR(255),
-  Comments_comment_id INT,
-  Posts_post_id INT,
-  FOREIGN KEY (Comments_comment_id) REFERENCES Comments (comment_id),
-  FOREIGN KEY (Posts_post_id) REFERENCES Posts (post_id)
-)
+--  files
+-- CREATE TABLE Files (
+--   idk VARCHAR(255),
+--   Comments_comment_id INT,
+--   Posts_post_id INT,
+--   FOREIGN KEY (Comments_comment_id) REFERENCES Comments (comment_id),
+--   FOREIGN KEY (Posts_post_id) REFERENCES Posts (post_id)
+-- );

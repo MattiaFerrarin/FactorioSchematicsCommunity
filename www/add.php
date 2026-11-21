@@ -1,226 +1,93 @@
-
 <?php
+require_once 'auth.php';
+$user = currentUser();
 
-$host = getenv('DB_HOST') ?: 'db';
-$dbname = getenv('DB_NAME') ?: 'scuola';
-$dbuser = getenv('DB_USER') ?: 'studente';
-$dbpass = getenv('DB_PASSWORD') ?: 'es_password';
+if (!$user) {
+    header('Location: login.php');
+    exit;
+}
 
-$error = '';
+$errors = [];
+$title = '';
+$body = '';
 
-try {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $title = trim($_POST['title'] ?? '');
+    $body = trim($_POST['body'] ?? '');
 
-    $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
-        $dbuser,
-        $dbpass,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]
-    );
+    if ($title === '') {
+        $errors[] = 'Title is required.';
+    } elseif (mb_strlen($title) > 255) {
+        $errors[] = 'Title must be 255 characters or fewer.';
+    }
 
-    // Retrieve existing users for the author selection
-    $users = $pdo->query("
-        SELECT username, name
-        FROM Users
-        ORDER BY name
-    ")->fetchAll();
+    if ($body === '') {
+        $errors[] = 'Post content is required.';
+    }
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-        $title = trim($_POST['title'] ?? '');
-        $body = trim($_POST['body'] ?? '');
-        $username = trim($_POST['username'] ?? '');
-
-        if ($title === '' || $body === '' || $username === '') {
-
-            $error = "Please fill in all fields.";
-
-        } else {
-
-            $stmt = $pdo->prepare("
-                INSERT INTO Posts
-                    (title, body, Users_username)
-                VALUES
-                    (:title, :body, :username)
-            ");
-
+    if (empty($errors)) {
+        try {
+            $pdo = getDB();
+            $stmt = $pdo->prepare('
+                INSERT INTO Posts (creation_timestamp, title, body, Users_username)
+                VALUES (NOW(), :title, :body, :username)
+            ');
             $stmt->execute([
                 ':title' => $title,
                 ':body' => $body,
-                ':username' => $username
+                ':username' => $user['username'],
             ]);
 
-            header("Location: index.php");
+            header('Location: index.php');
             exit;
+        } catch (PDOException $e) {
+            $errors[] = 'Failed to publish post. Please try again.';
         }
     }
-
-} catch (PDOException $e) {
-
-    $error = "An error occurred while communicating with the database.";
-
 }
-
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Post - Factorio Schematics</title>
+    <title>Add Post - Factorio Schematics Community</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
-    <!-- Top Navigation Bar -->
-    <header class="top-navbar">
-
-        <div class="top-left">
-
-            <button id="hamburger-btn"
-                    class="hamburger-btn"
-                    aria-label="Toggle Menu"
-                    aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-
-            <a href="index.php" class="logo">
-                Factorio Schematics
-            </a>
-
-        </div>
-
-        <nav class="top-links">
-            <a href="index.php">Home</a>
-            <a href="add.php">Add Post</a>
-            <a href="remove.php">Remove Post</a>
-        </nav>
-
-        <div class="top-right">
-            <a href="#" class="user-icon" aria-label="User Settings">
-                <svg width="24" height="24"
-                     viewBox="0 0 24 24"
-                     fill="none"
-                     stroke="currentColor"
-                     stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-            </a>
-        </div>
-
-    </header>
-
-    <!-- Sidebar -->
-    <nav id="sidebar" class="sidebar">
-
-        <ul class="sidebar-menu">
-            <li><a href="index.php">Home</a></li>
-            <li><a href="index.php">Blueprints</a></li>
-            <li><a href="index.php">Community</a></li>
-            <li><a href="#">About</a></li>
-        </ul>
-
-        <div class="sidebar-bottom">
-            <a href="#">Settings</a>
-        </div>
-
-    </nav>
+    <?php require_once 'layout_top.php'; ?>
 
     <!-- Main Content -->
     <main class="main-content">
-
-        <h1>Add a Community Post</h1>
-
+        <h1>Create Post</h1>
         <p>
-            Share your Factorio creations with the community!
+            Posting as <strong><?= htmlspecialchars($user['name']) ?></strong> (@<?= htmlspecialchars($user['username']) ?>).
         </p>
 
-        <?php if ($error !== ''): ?>
-
-            <p class="error-message">
-                <?= htmlspecialchars($error) ?>
-            </p>
-
+        <?php if (!empty($errors)): ?>
+            <div class="auth-errors">
+                <?php foreach ($errors as $error): ?>
+                    <p><?= htmlspecialchars($error) ?></p>
+                <?php endforeach; ?>
+            </div>
         <?php endif; ?>
 
-        <form method="POST" action="add.php" class="post-form">
+        <form method="post" action="add.php" class="auth-form post-form">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" maxlength="255" value="<?= htmlspecialchars($title) ?>" required>
 
-            <label for="title">Post Title</label>
+            <label for="body">Content</label>
+            <textarea id="body" name="body" rows="8" required><?= htmlspecialchars($body) ?></textarea>
 
-            <input
-                type="text"
-                id="title"
-                name="title"
-                maxlength="255"
-                required
-            >
-
-            <label for="body">Post Content</label>
-
-            <textarea
-                id="body"
-                name="body"
-                rows="8"
-                required
-            ></textarea>
-
-            <label for="username">Author</label>
-
-            <select
-                id="username"
-                name="username"
-                required
-            >
-
-                <option value="">Select an author</option>
-
-                <?php foreach ($users as $user): ?>
-
-                    <option value="<?= htmlspecialchars($user['username']) ?>">
-                        <?= htmlspecialchars($user['name']) ?>
-                        (<?= htmlspecialchars($user['username']) ?>)
-                    </option>
-
-                <?php endforeach; ?>
-
-            </select>
-
-            <button type="submit" class="action-btn add-btn">
-                Publish Post
-            </button>
-
+            <div class="page-actions">
+                <button type="submit" class="action-btn add-btn">Publish Post</button>
+                <a href="index.php" class="action-btn">Cancel</a>
+            </div>
         </form>
-
-        <a href="index.php" class="back-link">
-            ← Back to Home
-        </a>
-
     </main>
 
-    <script>
-        const hamburgerBtn =
-            document.getElementById('hamburger-btn');
-
-        const sidebar =
-            document.getElementById('sidebar');
-
-        hamburgerBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-
-            hamburgerBtn.setAttribute(
-                'aria-expanded',
-                sidebar.classList.contains('active')
-            );
-        });
-    </script>
-
+    <?php require_once 'layout_bottom.php'; ?>
 </body>
 </html>
